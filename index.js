@@ -1,6 +1,7 @@
 const express = require('express');         // call express
 const app = express();                      // define our app using express
 const bodyParser = require('body-parser');
+const fetch = require('node-fetch');
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -20,9 +21,31 @@ router.get('/', function(req, res) {
 
 router.post('/validatepullrequest', (req, res) => {
     console.log(req.body);
-    res.json({
-        message: 'Validating!',
-    });
+
+    const PULL_REQUEST_VALIDATION = 'pull-request-validation';
+    const GITHUB_API_KEY = process.env.GITHUB_API_KEY;
+    const {statuses_url} = req.body.pull_request;
+    const pendingStatus = {
+        state: 'pending',
+        description: 'Validating your pull request',
+        constext: PULL_REQUEST_VALIDATION,
+    };
+
+    const options = {
+        method: 'POST',
+        body: JSON.stringify(pendingStatus),
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `token ${GITHUB_API_KEY}`,
+        },
+    };
+
+    fetch(statuses_url, options)
+        .then(() => {
+            res.json({
+                message: 'Validating!',
+            });
+        });
 });
 
 app.use('/api', router);
