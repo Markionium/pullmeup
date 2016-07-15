@@ -41,9 +41,11 @@ router.post('/validatepullrequest', (req, res) => {
     };
 
     if (!GITHUB_API_KEY) {
-        res.json({
-            error: 'GITHUB_API_KEY not available.',
-        });
+        res
+            .status(500)
+            .json({
+                error: 'GITHUB_API_KEY not available.',
+            });
         return;
     }
 
