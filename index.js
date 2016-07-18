@@ -5,12 +5,14 @@ const config = require('./config');
 
 const { setStatusPending, setStatusSuccess, setStatusFailed} = require('./validate/github');
 const { validatePullRequest } = require('./validate/validate');
-const { isValidRequestBody } = require('./validate/utils');
+const { isValidRequestBody, validateBodyHash } = require('./validate/utils');
 
 // configure app to use bodyParser()
 // this will parse the JSON body to a JS Object
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({
+    verify: validateBodyHash,
+}));
 
 // ROUTES FOR API
 // =============================================================================

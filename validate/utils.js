@@ -1,5 +1,7 @@
 const semver = require('semver');
-const { compose, head, split, some, isEqual, get, replace, contains, filter, includes, slice, tail, takeRight, memoize, every, curry, map} = require('lodash/fp');
+const crypto = require('crypto');
+const { compose, head, split, some, isEqual, get, replace, contains, filter, includes, slice, tail, takeRight, memoize, every, curry, map, isString} = require('lodash/fp');
+const { ALLOWED_REPOS, PULLMEUP_REQUEST_SECRET } = require('../config');
 
 // spy :: Any -> Any
 const spy = (v) => { console.log(v); return v; };
@@ -43,6 +45,15 @@ function objectChecks(requiredProps) {
 // runCheckForBody :: Object -> Function -> Any
 const runCheckForBody = curry((body, check) => check(body));
 
+// getFullRepoName :: Object -> String
+const getFullRepoName = get('pull_request.base.repo.full_name');
+
+// hasFullRepoName :: Object -> Bool
+const hasFullRepoName = compose(isString, getFullRepoName);
+
+// isPullRequestForAllowedRepo :: Object -> Bool
+const isPullRequestForAllowedRepo = (body) => hasFullRepoName(body) && includes(getFullRepoName(body), ALLOWED_REPOS);
+
 // isValidRequestBody :: Object -> Bool
 const isValidRequestBody = (body) => {
     const requiredProps = [
@@ -51,8 +62,34 @@ const isValidRequestBody = (body) => {
         'pull_request.head.repo',
     ];
 
-    return every(runCheckForBody(body), objectChecks(requiredProps));
+    return every(runCheckForBody(body), objectChecks(requiredProps)) && isPullRequestForAllowedRepo(body);
 };
+
+function throw403Error(response) {
+    response
+            .status(403)
+            .json({
+                message: 'Request not valid',
+            });
+
+        // Throw error so we do not get to the request handler
+        throw new Error('Failed!');
+}
+
+function validateBodyHash(request, response, buff) {
+    if (!PULLMEUP_REQUEST_SECRET || (request && !request.headers['X-Hub-Signature'])) {
+        return throw403Error(response);
+    }
+
+    const hash = crypto.createHmac('sha1', PULLMEUP_REQUEST_SECRET)
+        .update(buff)
+        .digest('hex');
+
+    // TODO: Update when this is merged https://github.com/nodejs/node/pull/3073
+    if (request.headers['X-Hub-Signature'] !== `sha1=${hash}`) {
+        return throw403Error(response);
+	}
+}
 
 module.exports = {
     parseVersion,
@@ -61,4 +98,5 @@ module.exports = {
     getJSONFromResponse,
     getVersionFromPackageResponse,
     isValidRequestBody,
+    validateBodyHash,
 };
