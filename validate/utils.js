@@ -1,4 +1,4 @@
-const { compose, head, split, some, isEqual, get, replace, contains, filter, includes, slice, tail, takeRight, memoize} = require('lodash/fp');
+const { compose, head, split, some, isEqual, get, replace, contains, filter, includes, slice, tail, takeRight, memoize, every, curry, map} = require('lodash/fp');
 
 const buildVersionObject = (versionArray) => ({ major: versionArray[0], minor: versionArray[1], patch: versionArray[2] });
 const parseVersion = compose(buildVersionObject, split('.'));
@@ -12,10 +12,27 @@ const getVersionFromPackageResponse = compose(parseVersion, get('version'), hand
 
 const getJSONFromResponse = resp => resp.json();
 
+function objectChecks(requiredProps) {
+    return map(get, requiredProps);
+}
+
+const runCheckForBody = curry((body, check) => check(body));
+
+const isValidRequestBody = (body) => {
+    const requiredProps = [
+        'pull_request.statuses_url',
+        'pull_request.base.repo',
+        'pull_request.head.repo',
+    ];
+
+    return every(runCheckForBody(body), objectChecks(requiredProps));
+};
+
 module.exports = {
     parseVersion,
     isPackageJson,
     getPackagejsonUrl,
     getJSONFromResponse,
     getVersionFromPackageResponse,
+    isValidRequestBody,
 };

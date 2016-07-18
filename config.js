@@ -6,4 +6,8 @@ module.exports = {
     port,
     PULL_REQUEST_VALIDATION,
     GITHUB_API_KEY,
+    repos: [
+        'dhis2/d2',
+        'dhis2/d2-ui',
+    ],
 };

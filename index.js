@@ -5,6 +5,7 @@ const config = require('./config');
 
 const { setStatusPending, setStatusSuccess, setStatusFailed} = require('./validate/github');
 const { validatePullRequest } = require('./validate/validate');
+const { isValidRequestBody } = require('./validate/utils');
 
 // configure app to use bodyParser()
 // this will parse the JSON body to a JS Object
@@ -20,6 +21,15 @@ router.get('/', function(req, res) {
 });
 
 router.post('/validatepullrequest', (request, response) => {
+    // Check if this is a valid request body
+    if (!isValidRequestBody(request.body)) {
+        return response
+            .status(403)
+            .json({
+                message: 'This is not a valid request body or the repository is not within the list of repositories that we check statuses for',
+            });
+    }
+
     const {statuses_url} = request.body.pull_request;
 
     setStatusPending(statuses_url)
