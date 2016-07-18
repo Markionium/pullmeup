@@ -77,7 +77,7 @@ function throw403Error(response) {
 }
 
 function validateBodyHash(request, response, buff) {
-    if (!PULLMEUP_REQUEST_SECRET || (request && !request.headers['X-Hub-Signature'])) {
+    if (!PULLMEUP_REQUEST_SECRET || (request && !request.headers['x-hub-signature'])) {
         return throw403Error(response);
     }
 
@@ -86,7 +86,7 @@ function validateBodyHash(request, response, buff) {
         .digest('hex');
 
     // TODO: Update when this is merged https://github.com/nodejs/node/pull/3073
-    if (request.headers['X-Hub-Signature'] !== `sha1=${hash}`) {
+    if (request.headers['x-hub-signature'] !== `sha1=${hash}`) {
         return throw403Error(response);
 	}
 }

@@ -6,6 +6,7 @@ const PULLMEUP_REQUEST_SECRET = process.env.PULLMEUP_REQUEST_SECRET;
 module.exports = {
     port,
     PULL_REQUEST_VALIDATION,
+    PULLMEUP_REQUEST_SECRET,
     GITHUB_API_KEY,
     ALLOWED_REPOS: [
         'dhis2/d2',
