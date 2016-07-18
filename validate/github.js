@@ -10,13 +10,15 @@ const getRequestOptions = (body) => ({
     },
 });
 
+function rejectNoApiKey() {
+    return Promise.reject({
+        status: 500,
+        message: 'GITHUB_API_KEY not available.',
+    });
+}
+
 function setStatusPending(statuses_url) {
-    if (!GITHUB_API_KEY) {
-        return Promise.reject({
-            status: 500,
-            message: 'GITHUB_API_KEY not available.',
-        });
-    }
+    if (!GITHUB_API_KEY) { return rejectNoApiKey(); }
 
     const pendingStatus = {
         state: 'pending',
@@ -32,17 +34,12 @@ function setStatusPending(statuses_url) {
         }));
 }
 
-function setStatusSuccess(statuses_url, {url, description}) {
-    if (!GITHUB_API_KEY) {
-        return Promise.reject({
-            status: 500,
-            message: 'GITHUB_API_KEY not available.',
-        });
-    }
+function setStatusSuccess(statuses_url, {url, message}) {
+    if (!GITHUB_API_KEY) { return rejectNoApiKey(); }
 
     const successStatus = {
         state: 'success',
-        description: description || 'Pull request is valid',
+        description: message || 'Pull request is valid',
         context: PULL_REQUEST_VALIDATION,
         target_url: url,
     };
@@ -55,17 +52,12 @@ function setStatusSuccess(statuses_url, {url, description}) {
         }));
 }
 
-function setStatusFailed(statuses_url, {url, description}) {
-    if (!GITHUB_API_KEY) {
-        return Promise.reject({
-            status: 500,
-            message: 'GITHUB_API_KEY not available.',
-        });
-    }
+function setStatusFailed(statuses_url, {url, message}) {
+    if (!GITHUB_API_KEY) { return rejectNoApiKey(); }
 
     const failedStatus = {
         state: 'failure',
-        description: description || 'Pull request is invalid',
+        description: message || 'Pull request is invalid',
         context: PULL_REQUEST_VALIDATION,
         target_url: url,
     };
