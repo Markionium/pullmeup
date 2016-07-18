@@ -9,12 +9,6 @@ const headers = {
     'Content-Type': 'application/json',
 };
 
-console.log(request(Object.assign({
-            body: JSON.stringify({}),
-            headers,
-            method: 'POST'
-        }))('url'));
-
 module.exports = {
     get: request({headers}),
     post: (body) => ({
