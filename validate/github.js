@@ -24,7 +24,7 @@ function setStatusPending(statuses_url) {
         context: PULL_REQUEST_VALIDATION,
     };
 
-    return request.post(pendingStatus).to(statuses_url)()
+    return request.post(pendingStatus).to(statuses_url)
         .then(() => ({
             status: 200,
             message: 'Validating!',
@@ -46,7 +46,7 @@ function setStatusSuccess(statuses_url) {
         context: PULL_REQUEST_VALIDATION,
     };
 
-    return request.post(successStatus).to(statuses_url)()
+    return request.post(successStatus).to(statuses_url)
         .then(() => ({
             status: 200,
             message: 'Success!',
@@ -68,7 +68,7 @@ function setStatusFailed(statuses_url) {
         context: PULL_REQUEST_VALIDATION,
     };
 
-    return request.post(failedStatus).to(statuses_url)()
+    return request.post(failedStatus).to(statuses_url)
         .then(() => ({
             status: 400,
             message: 'Failure!',
