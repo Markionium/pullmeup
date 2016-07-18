@@ -56,10 +56,15 @@ function validatePullRequest({base, head}) {
 
 function isValidVersion([base, head]) {
     if (base.major === head.major && (base.minor !== head.minor || base.patch !== head.patch)) {
-        return Promise.resolve('Valid version!');
+        return Promise.resolve({
+            message: 'Valid version!',
+        });
     }
 
-    return Promise.reject('Not a valid version!');
+    return Promise.reject({
+        message: 'Not a valid version!',
+        url: 'https://github.com/Markionium/pullmeup/blob/master/statuses/statuses.md#invalid-version',
+    });
 }
 
 module.exports = {

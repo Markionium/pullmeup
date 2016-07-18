@@ -32,7 +32,7 @@ function setStatusPending(statuses_url) {
         }));
 }
 
-function setStatusSuccess(statuses_url) {
+function setStatusSuccess(statuses_url, {url, description}) {
     if (!GITHUB_API_KEY) {
         return Promise.reject({
             status: 500,
@@ -42,8 +42,9 @@ function setStatusSuccess(statuses_url) {
 
     const successStatus = {
         state: 'success',
-        description: 'Pull request is valid',
+        description: description || 'Pull request is valid',
         context: PULL_REQUEST_VALIDATION,
+        target_url: url,
     };
 
     return request.post(successStatus).to(statuses_url)
@@ -54,7 +55,7 @@ function setStatusSuccess(statuses_url) {
         }));
 }
 
-function setStatusFailed(statuses_url) {
+function setStatusFailed(statuses_url, {url, description}) {
     if (!GITHUB_API_KEY) {
         return Promise.reject({
             status: 500,
@@ -64,8 +65,9 @@ function setStatusFailed(statuses_url) {
 
     const failedStatus = {
         state: 'failure',
-        description: 'Pull request is invalid',
+        description: description || 'Pull request is invalid',
         context: PULL_REQUEST_VALIDATION,
+        target_url: url,
     };
 
     return request.post(failedStatus).to(statuses_url)

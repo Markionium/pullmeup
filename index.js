@@ -32,8 +32,8 @@ router.post('/validatepullrequest', (request, response) => {
         })
         .then(() => {
             validatePullRequest(request.body.pull_request)
-                .then(() => setStatusSuccess(statuses_url))
-                .catch(() => setStatusFailed(statuses_url));
+                .then((status) => setStatusSuccess(statuses_url, status))
+                .catch((status) => setStatusFailed(statuses_url, status));
         });
 });
 
