@@ -2,15 +2,17 @@ const { split, compose, filter, startsWith, replace, map, includes, get, has, ne
 const { parseVersion, isPackageJson, getJSONFromResponse, getVersionFromPackageResponse, getPackagejsonUrl } = require('./utils');
 const request = require('../request/request');
 
+// getRequiredFilesFromCompareResponse :: [Strings] -> Object -> [Strings]
 const getRequiredFilesFromCompareResponse = curry((requiredFiles, payload) => compose(filter(compose((filename) => includes(filename, requiredFiles), get('filename'))), get('files'))(payload));
 
-// ({sha: String, repo: Object}) => String
+// getTreesUrl :: ({sha: String, repo: Object}) -> String
 function getTreesUrl({sha, repo}) {
     const buildBlobsUrl = compose(replace('{/sha}', `/${sha}`), get('trees_url'));
 
     return buildBlobsUrl(repo);
 }
 
+// prepareCompareUrl :: Object, Object -> String
 function prepareCompareUrl(base, head) {
     if (!base || !head) {
         throw new Error('No base and/or head can be found on the pull request');
@@ -28,14 +30,16 @@ function prepareCompareUrl(base, head) {
 }
 
 // Impure
+// getPackage :: String -> Promise
 function getPackage(packageUrl) {
     return request.get(packageUrl)
         .then(getJSONFromResponse);
 }
 
 // Impure
-function getPackageJsonVersionForTree(treeRequest) {
-    return Promise.resolve(treeRequest)
+// getPackage :: Object -> Promise
+function getPackageJsonVersionForTree(treeResponse) {
+    return Promise.resolve(treeResponse)
         .then(getJSONFromResponse)
         .then(getPackagejsonUrl)
         .then(getPackage)
@@ -43,6 +47,7 @@ function getPackageJsonVersionForTree(treeRequest) {
 }
 
 // Impure
+// validatePullRequest :: {base, head} -> Promise
 function validatePullRequest({base, head}) {
     const baseTree = request.get(getTreesUrl(base))
         .then(getPackageJsonVersionForTree);
@@ -54,19 +59,26 @@ function validatePullRequest({base, head}) {
         .then(isValidVersion);
 }
 
+// isValidVersion :: [base, head] -> Promise
 function isValidVersion([base, head]) {
-    if (base.major === head.major && (base.minor !== head.minor || base.patch !== head.patch)) {
-        return Promise.resolve({
-            message: 'Valid version!',
+    const invalidVersionUrl = 'https://github.com/Markionium/pullmeup/blob/master/statuses/statuses.md#invalid-version';
+
+    if (base.major !== head.major) {
+        return Promise.reject({ message: 'Major version differs', url: invalidVersionUrl });
+    }
+
+    if (head.isLessOrEqualTo(base)) {
+        return Promise.reject({
+            message: 'package.json version can not be equal to or smaller than the base version',
         });
     }
 
-    return Promise.reject({
-        message: 'Not a valid version!',
-        url: 'https://github.com/Markionium/pullmeup/blob/master/statuses/statuses.md#invalid-version',
+    return Promise.resolve({
+        message: 'Version is valid!',
     });
 }
 
 module.exports = {
     validatePullRequest,
+    isValidVersion,
 };

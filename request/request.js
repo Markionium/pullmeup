@@ -10,8 +10,13 @@ const headers = {
 };
 
 module.exports = {
+    // Impure
+    // get :: String -> Promise
     get: request({headers}),
+    // post :: Any -> String -> Promise
     post: (body) => ({
+        // Impure
+        // String -> Promise
         to: request(Object.assign({
             body: JSON.stringify(body),
             headers,
