@@ -48,7 +48,7 @@ function setStatusSuccess(statuses_url, {url, message}) {
         .then(() => ({
             status: 200,
             message: 'Success!',
-            githubStatus: pendingStatus,
+            githubStatus: successStatus,
         }));
 }
 
@@ -66,7 +66,7 @@ function setStatusFailed(statuses_url, {url, message}) {
         .then(() => ({
             status: 400,
             message: 'Failure!',
-            githubStatus: pendingStatus,
+            githubStatus: failedStatus,
         }));
 }
 
